@@ -1,3 +1,6 @@
+#ifndef TCPSERVER_HPP
+#define TCPSERVER_HPP
+
 #include <netinet/in.h>
 #include <string>
 #include <sys/socket.h>
@@ -23,3 +26,4 @@ class TCPServer {
 	int getSocket();
 	void closeClient(int clientSocket);
 };
+#endif	// !TCPSERVER_HPP

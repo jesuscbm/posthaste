@@ -1,3 +1,5 @@
+#ifndef HTTP_SERVER
+#define HTTP_SERVER
 #include <atomic>
 #include <cstring>
 #include <functional>
@@ -28,7 +30,7 @@ class HttpServer {
 		std::string current_header_key, current_header_value;
 		static constexpr int buf_max = 512;
 		char buffer[buf_max];
-		std::vector<char> body;
+		std::string body;
 		size_t content_length = 0;
 
 		ConnectionContext(int f) : fd(f)
@@ -51,6 +53,8 @@ class HttpServer {
 
 	std::optional<TCPServer> tcpServer;
 	std::unordered_map<std::string, std::function<HttpResponse(const HttpRequest &)>> endpoints;
+	std::vector<std::pair<std::string, std::function<HttpResponse(const HttpRequest &)>>>
+	  wildcard_endpoints;
 
 	// Map with the context for each fd, that way a thread can resume the parsing of a request that
 	// another thread started
@@ -77,3 +81,4 @@ class HttpServer {
 	void addEndpoint(const std::string &path, std::function<HttpResponse(const HttpRequest &)>);
 	void serve(std::optional<std::reference_wrapper<std::atomic<bool>>> = std::nullopt);
 };
+#endif

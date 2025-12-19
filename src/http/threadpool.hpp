@@ -1,3 +1,6 @@
+#ifndef THREADPOOL_HPP
+#define THREADPOOL_HPP
+
 #include <functional>
 #include <mutex>
 #include <optional>
@@ -27,3 +30,4 @@ class ThreadPool {
 
 	void addTask(std::function<void()>);
 };
+#endif	// !THREADPOOL_HPP

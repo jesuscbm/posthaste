@@ -1,73 +1,71 @@
-# C++ HTTP Server
+# CPPaste / Custom C++ HTTP Server
 
-A lightweight, custom HTTP server implementation written in C++ using POSIX
-sockets, using epoll and a threadpool (reactor pattern). It features a custom
-HTTP 1.1 request parser and functional endpoint routing.
+A high-performance, non-blocking HTTP server built from scratch in C++17. It implements the Reactor pattern using `epoll` (Edge Triggered) and a custom ThreadPool. Deployed as a lightweight Pastebin service.
 
-## Project Structure
+**Environment:** POSIX Sockets.
+**Dependencies:** None (Pure C++ STL).
 
-- **main.cpp**: Entry point that initializes the server and defines endpoints.
-- **httpserver.cpp/hpp**: Manages the connection loop and routes requests to
-  functions.
-- **tcpserver.cpp/hpp**: Wraps low-level POSIX socket operations (socket, bind,
-  listen, accept).
-- **httprequest.cpp/hpp**: Parses and stores HTTP method, path, headers, and
-  body.
-- **httpresponse.cpp/hpp**: Helper class to format and serialize HTTP
-  responses.
-- **threadpool.cpp/hpp**: Class that manages the concurrency as a threadpool
-  with a task queue.
+## Architecture & Features
 
-## Requirements
+- **Core:** Non-blocking I/O with `epoll` in Edge-Triggered mode.
+- **Concurrency:** Custom `ThreadPool` for task distribution (Reactor pattern).
+- **Parsing:** Hand-written HTTP 1.1 state machine (Zero-copy intent).
+- **Application (Pastebin):**
+  - **Storage:** Flat-file system storage in the `p/` directory.
+  - **IDs:** Random Base62 ID generation.
+  - **Expiration:** Lazy expiration strategy (checks metadata on read).
+  - **Routing:** Wildcard support (e.g., `/p/*`).
 
-- C++17 compatible compiler.
-- Linux/Unix environment.
+## Project Structure Overview
+
+- **src/**: Contains the main application logic, endpoints, and utilities.
+- **src/http/**: Houses the core server infrastructure, including the HTTP state machine parser, response serializer, and low-level TCP socket wrappers.
+- **p/**: The data storage directory where pastes and their metadata are saved.
+- **index.html**: The frontend interface for the Pastebin.
 
 ## Compilation
 
-Compile the source files using `g++`.
+Standard GNU Make build system.
 
-```bash
+```
 make
 ```
 
 ## Usage
 
-1.  **Start the server:**
+1.  **Run the server:**
 
-    ```bash
+    ```
     ./server
     ```
 
-    The default configuration listens on port 8080.
+    Listens on port `8080` by default.
 
-2.  **Define Endpoints:**
+2.  **Web Interface:**
+    Access `http://localhost:8080` to use the frontend.
 
-    Routes are defined using the `addEndpoint` method, accepting a path string
-    and a callback function.
+3.  **API / Endpoints:**
 
-    ```cpp
-    #include "httpserver.hpp"
+    | Method | Path      | Description                                                           |
+    | :----- | :-------- | :-------------------------------------------------------------------- |
+    | `GET`  | `/`       | Serves `index.html`.                                                  |
+    | `GET`  | `/health` | Server status check.                                                  |
+    | `POST` | `/paste`  | Accepts `content` and `expiration` (form-data). Returns 303 Redirect. |
+    | `GET`  | `/p/*`    | Retrieves paste by ID. Handles lazy deletion if expired.              |
 
-    int main() {
-    HttpServer server(8080);
+## Storage Logic
 
-        // Define a health check endpoint
-        server.addEndpoint("/health", [](const HttpRequest &req) {
-            HttpResponse response;
-            response.setStatusCode(200);
-            response.setBody("OK");
-            return response;
-        });
+Pastes are stored as file pairs in the `p/` directory (or sharded subdirectories if configured):
 
-        server.serve();
-        return 0;
+- `{ID}`: Raw content.
+- `{ID}.meta`: Expiration timestamp (Unix epoch).
 
-    }
-    ```
+When a paste is requested via `GET /p/{ID}`, the server reads the `.meta` file. If `current_time > expiration`, both files are physically deleted via `std::filesystem::remove`, and a 404 is returned.
 
 ## TODO
 
-- Use HTTPServer API to create a Pastebin-like web.
-- Clean stop to server.
-- New API for high I/O.
+- Docker image (and arguments)
+
+## License
+
+**GNU General Public License v3.0**

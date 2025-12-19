@@ -4,7 +4,9 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
-#include "httpserver.hpp"
+#include "endpoints.hpp"
+#include "http/httpserver.hpp"
+
 using namespace std;
 
 std::atomic<bool> stop_signal(false);
@@ -20,23 +22,23 @@ HttpResponse status(const HttpRequest &request)
 	response.setStatusCode(200);
 	response.setBody(*request.getHeader("Host"));
 
-	cout << "-- MAIN --\n" << request.serialize() << "\n --------- \n";
-
 	return response;
 }
 
 int main()
 {
-	HttpServer server(8080, 1);
+	HttpServer server(8080);
 
 	signal(SIGINT, signal_handler);
 
 	server.addEndpoint("/health", status);
-	server.addEndpoint("/", status);
+	server.addEndpoint("/", [](const HttpRequest &r) { return serve_file(r, "index.html"); });
+	server.addEndpoint("/paste", handle_paste);
+	server.addEndpoint("/p/*", show_paste);
 
 	server.serve(stop_signal);
 
-	cout << "Exiting!\n";
+	cout << "\nExiting!\n";
 
 	return 0;
 }

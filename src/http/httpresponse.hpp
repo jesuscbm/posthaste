@@ -1,3 +1,6 @@
+#ifndef HTTP_RESPONSE
+#define HTTP_RESPONSE
+
 #include <map>
 #include <netinet/in.h>
 #include <string>
@@ -7,8 +10,9 @@ class HttpResponse {
    public:
 	HttpResponse() = default;
 	void setStatusCode(int code);
-	void setContentType(const std::string &type);
-	void setBody(const std::string &body);
+	void setContentType(std::string type);
+	void setBody(std::string body);
+	void addHeader(const std::string &, const std::string &);
 
 	std::string serialize() const;
 
@@ -19,3 +23,5 @@ class HttpResponse {
 
 	std::string getStatusText(int code) const;
 };
+
+#endif	// !HTTP_RESPONSE

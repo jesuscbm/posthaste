@@ -5,15 +5,20 @@ void HttpResponse::setStatusCode(int code)
 	this->code = code;
 }
 
-void HttpResponse::setContentType(const std::string &type)
+void HttpResponse::setContentType(std::string type)
 {
-	headers["Content-Type"] = type;
+	headers["Content-Type"] = std::move(type);
 }
 
-void HttpResponse::setBody(const std::string &body)
+void HttpResponse::setBody(std::string body)
 {
 	this->body = body;
 	headers["Content-Length"] = std::to_string(body.size());
+}
+
+void HttpResponse::addHeader(const std::string &key, const std::string &value)
+{
+	headers[key] = value;
 }
 
 std::string HttpResponse::serialize() const

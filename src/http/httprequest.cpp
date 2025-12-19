@@ -1,6 +1,5 @@
 #include "httprequest.hpp"
 #include <string>
-#include <vector>
 
 void HttpRequest::addHeader(const std::string &key, const std::string &value)
 {
@@ -19,7 +18,7 @@ void HttpRequest::setVersion(std::string v)
 {
 	version = std::move(v);
 }
-void HttpRequest::setBody(std::vector<char> b)
+void HttpRequest::setBody(std::string b)
 {
 	body = std::move(b);
 }
@@ -39,7 +38,7 @@ const std::string &HttpRequest::getVersion() const
 	return version;
 }
 
-const std::vector<char> &HttpRequest::getBody() const
+const std::string &HttpRequest::getBody() const
 {
 	return body;
 }

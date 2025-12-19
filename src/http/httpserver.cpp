@@ -6,13 +6,12 @@
 #include <optional>
 #include <sys/epoll.h>
 #include <unistd.h>
-#include <vector>
 
 std::optional<HttpRequest> HttpServer::get_request(ConnectionContext &ctx, bool &is_closed)
 {
 	const int fd = ctx.fd;
 	HttpRequest req = ctx.req;
-	std::vector<char> &body = ctx.body;
+	std::string &body = ctx.body;
 
 	for (;;) {
 		ssize_t bytes_received = recv(fd, ctx.buffer, sizeof(ctx.buffer), 0);
@@ -178,15 +177,23 @@ void HttpServer::handle_connection(int fd)
 
 		if (request) {
 			const HttpResponse response = [&request, this] {
-				auto it = this->endpoints.find(request->getPath());
-				if (it == this->endpoints.end()) {
-					HttpResponse notFoud;
-					notFoud.setStatusCode(404);
-					notFoud.setBody("<h1>404 Not found</h1>");
-					return notFoud;
-				} else {
+				const std::string &path = request->getPath();
+
+				auto it = this->endpoints.find(path);
+				if (it != this->endpoints.end()) {
 					return it->second(*request);
 				}
+
+				for (const auto &[base_path, handler] : this->wildcard_endpoints) {
+					if (path.rfind(base_path, 0) == 0) {
+						return handler(*request);
+					}
+				}
+
+				HttpResponse notFound;
+				notFound.setStatusCode(404);
+				notFound.setBody("<h1>404 Not found</h1>");
+				return notFound;
 			}();
 
 			std::string s_response = response.serialize();
@@ -243,7 +250,12 @@ HttpServer::HttpServer(HttpServer &&s) noexcept
 void HttpServer::addEndpoint(const std::string &path,
 							 std::function<HttpResponse(const HttpRequest &)> f)
 {
-	endpoints[path] = f;
+	if (!path.empty() && path.back() == '*') {
+		std::string base_path = path.substr(0, path.size() - 1);
+		wildcard_endpoints.push_back({ base_path, f });
+	} else {
+		endpoints[path] = f;
+	}
 }
 
 void HttpServer::serve(std::optional<std::reference_wrapper<std::atomic<bool>>> stop)

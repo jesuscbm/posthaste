@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CPPaste</title>
+    <style>
+      :root {
+        --bg: #1a1b26;
+        --input-bg: #16161e;
+        --text: #c0caf5;
+        --primary: #7aa2f7;
+        --secondary: #414868;
+        --accent: #bb9af7;
+        --hover: #db4b4b;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background-color: var(--bg);
+        color: var(--text);
+        font-family: "JetBrains Mono", "Consolas", monospace;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 900px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 5px;
+        border-bottom: 1px solid var(--secondary);
+      }
+
+      h1 {
+        font-size: 1.5rem;
+        color: var(--accent);
+      }
+
+      .profile-links {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+      }
+
+      .profile-links a {
+        color: var(--text);
+        text-decoration: none;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: color 0.2s;
+      }
+
+      .profile-links a:hover {
+        color: var(--primary);
+      }
+
+      .github-icon svg {
+        fill: currentColor;
+        width: 20px;
+        height: 20px;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        height: 75vh;
+      }
+
+      textarea {
+        flex: 1;
+        background-color: var(--input-bg);
+        color: var(--text);
+        border: 1px solid var(--secondary);
+        border-radius: 4px;
+        padding: 20px;
+        font-family: inherit;
+        font-size: 14px;
+        resize: none;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+
+      textarea:focus {
+        border-color: var(--primary);
+      }
+
+      .controls {
+        display: flex;
+        justify-content: flex-end;
+        gap: 15px;
+        align-items: center;
+      }
+
+      select {
+        background: var(--bg);
+        color: var(--text);
+        border: 1px solid var(--secondary);
+        padding: 10px;
+        border-radius: 4px;
+        outline: none;
+        cursor: pointer;
+      }
+
+      button {
+        background-color: var(--primary);
+        color: var(--input-bg);
+        border: none;
+        padding: 12px 30px;
+        border-radius: 4px;
+        font-weight: bold;
+        font-family: inherit;
+        cursor: pointer;
+        transition: opacity 0.2s;
+      }
+
+      button:hover {
+        opacity: 0.9;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>~/cppaste</h1>
+
+        <div class="profile-links">
+          <a href="https://jesuscbm.github.io" target="_blank">
+            jesuscbm.github.io
+          </a>
+
+          <a
+            href="https://github.com/jesuscbm"
+            target="_blank"
+            class="github-icon"
+            aria-label="GitHub"
+          >
+            <svg viewBox="0 0 16 16" version="1.1" aria-hidden="true">
+              <path
+                fill-rule="evenodd"
+                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
+              ></path>
+            </svg>
+            jesuscbm
+          </a>
+        </div>
+      </header>
+
+      <form action="/paste" method="POST">
+        <textarea
+          name="content"
+          placeholder="// Write or copy text here..."
+          required
+        ></textarea>
+
+        <div class="controls">
+          <select name="expiration">
+            <option value="1h">1 Hour</option>
+            <option value="1d" selected>1 Day</option>
+            <option value="1w">1 Week</option>
+            <option value="never">Never</option>
+          </select>
+          <button type="submit">Save</button>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>
