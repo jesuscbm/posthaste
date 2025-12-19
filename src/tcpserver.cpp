@@ -8,7 +8,7 @@
 
 TCPServer::TCPServer(const std::string &ipAddress, int port) : port(port), serverAddress(ipAddress)
 {
-	serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	serverSocket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
 	if (serverSocket == -1) {
 		exitWithError("Failed to create socket");
 	}
@@ -77,7 +77,14 @@ void TCPServer::startServer()
 
 int TCPServer::acceptConnection()
 {
-	return accept(this->serverSocket, nullptr, nullptr);
+	struct sockaddr_in clientAddr;
+	socklen_t clientAddrLen = sizeof(clientAddr);
+	return accept(this->serverSocket, (struct sockaddr *)&clientAddr, &clientAddrLen);
+}
+
+int TCPServer::getSocket()
+{
+	return serverSocket;
 }
 
 void TCPServer::closeClient(int clientSocket)

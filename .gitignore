@@ -1,4 +1,5 @@
 build/
 *.o
+curl_data
 *.session
 server

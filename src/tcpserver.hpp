@@ -20,5 +20,6 @@ class TCPServer {
 
 	void startServer();
 	int acceptConnection();
+	int getSocket();
 	void closeClient(int clientSocket);
 };

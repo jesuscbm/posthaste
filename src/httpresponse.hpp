@@ -10,7 +10,6 @@ class HttpResponse {
 	void setContentType(const std::string &type);
 	void setBody(const std::string &body);
 
-	// Assembles the final string: Status + Headers + \r\n + Body
 	std::string serialize() const;
 
    private:

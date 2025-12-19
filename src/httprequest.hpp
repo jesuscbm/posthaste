@@ -1,14 +1,17 @@
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
-struct HttpRequest {
+class HttpRequest {
+   private:
 	std::string method;
 	std::string path;
 	std::string version;
 	std::vector<char> body;
 	std::map<std::string, std::string> headers;
 
+   public:
 	HttpRequest() = default;
 	HttpRequest(const HttpRequest &) = default;
 	HttpRequest(HttpRequest &&) = default;
@@ -17,12 +20,14 @@ struct HttpRequest {
 
 	const std::string &getMethod() const;
 	const std::string &getPath() const;
+	const std::string &getVersion() const;
 	const std::vector<char> &getBody() const;
-	const std::string &getHeader(const std::string &) const;
+	std::optional<const std::string> getHeader(const std::string &) const;
 
-	void setMethod(const std::string &);
-	void setPath(const std::string &);
-	void setBody(const std::vector<char> &);
+	void setMethod(std::string);
+	void setPath(std::string);
+	void setVersion(std::string);
+	void setBody(std::vector<char>);
 	void addHeader(const std::string &key, const std::string &value);
 
 	std::string serialize() const;
