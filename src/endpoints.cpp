@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
+#include <ostream>
 #include <sstream>
 #include <string>
 
@@ -66,22 +67,25 @@ HttpResponse show_paste(const HttpRequest &req)
 	std::string path = req.getPath();
 
 	HttpResponse response;
-	if (path.size() <= 3) {
+	if (path.size() <= 6) {
 		response.setStatusCode(404);
 		response.setBody("<h1>Not found</h1>");
 		return response;
 	}
 
 	std::string paste_id = path.substr(3);
+	std::string dirpath = "p/" + paste_id.substr(0, 1) + "/" + paste_id.substr(1, 1) + "/";
+	std::string filepath = dirpath + paste_id.substr(2);
+	std::string metapath = dirpath + paste_id.substr(2) + ".meta";
 
-	std::fstream f("p/" + paste_id);
+	std::fstream f(filepath);
 	if (!f.is_open()) {
 		response.setStatusCode(404);
 		response.setBody("<h1>Not found</h1>");
 		return response;
 	}
 
-	std::fstream meta("p/" + paste_id + ".meta");
+	std::ifstream meta(metapath);
 	if (!meta.is_open()) {
 		response.setStatusCode(404);
 		response.setBody("<h1>Not found</h1>");
@@ -94,8 +98,11 @@ HttpResponse show_paste(const HttpRequest &req)
 	if (expiration != -1 && std::time(nullptr) > expiration) {
 		f.close();
 		meta.close();
-		std::filesystem::remove(("p/" + paste_id).c_str());
-		std::filesystem::remove(("p/" + paste_id + ".meta").c_str());
+		std::filesystem::remove(filepath);
+		std::filesystem::remove(metapath);
+
+		if (std::filesystem::is_empty(dirpath))
+			std::filesystem::remove(dirpath);
 
 		response.setStatusCode(404);
 		response.setBody("<h1>Not found</h1>");

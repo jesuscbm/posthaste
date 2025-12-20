@@ -1,5 +1,6 @@
 #include "utils.hpp"
 #include <ctime>
+#include <filesystem>
 #include <fstream>
 #include <random>
 #include <sstream>
@@ -45,8 +46,14 @@ std::unordered_map<std::string, std::string> parse_form_data(const std::string &
 void save_paste_to_disk(const std::string &id, const std::string &content,
 						const std::string &expiry)
 {
-	std::ofstream output("p/" + id);
-	std::ofstream metadata("p/" + id + ".meta");
+	if (id.length() < 4)
+		return;
+	std::string shard1 = "p/" + id.substr(0, 1) + "/";
+	std::string shard2 = shard1 + id.substr(1, 1) + "/";
+	std::filesystem::create_directory(shard1);
+	std::filesystem::create_directory(shard2);
+	std::ofstream output(shard2 + id.substr(2));
+	std::ofstream metadata(shard2 + id.substr(2) + ".meta");
 
 	long long expiry_timestamp = -1;
 	std::time_t now = std::time(nullptr);

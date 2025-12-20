@@ -30,8 +30,6 @@ TCPServer::TCPServer(const std::string &ipAddress, int port) : port(port), serve
 
 TCPServer::TCPServer(TCPServer &&s)
 {
-	if (serverSocket != -1)
-		close(serverSocket);
 	socketAddress = std::exchange(s.socketAddress, { 0, 0, 0, 0 });
 	serverSocket = std::exchange(s.serverSocket, -1);
 	port = std::exchange(s.port, 0);

@@ -1,5 +1,5 @@
 CXX      := g++
-CXXFLAGS := -std=c++20 -Wall -Wextra -Werror -Isrc -MMD -MP -g
+CXXFLAGS := -std=c++20 -Wall -Wextra -Werror -Isrc -MMD -MP -O3
 LDFLAGS  := 
 
 SRC_DIR   := src
