@@ -16,18 +16,36 @@ void signal_handler(int)
 	stop_signal = true;
 }
 
-HttpResponse status(const HttpRequest &request)
+HttpResponse status(const HttpRequest &)
 {
 	HttpResponse response;
 	response.setStatusCode(200);
-	response.setBody(*request.getHeader("Host"));
+	response.setBody("{\"status\":\"ok\"}");
+	response.setContentType("application/json");
 
 	return response;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-	HttpServer server(8080);
+	int port = 80, n_threads = thread::hardware_concurrency();
+
+	if (argc == 1) {
+		cout << "Using default values:\nPort 80, Number of workers: " << n_threads << endl;
+	}
+
+	for (int i = 1; i < argc - 1; i++) {
+		string_view arg(argv[i]);
+		if (arg == "-p") {
+			port = stoi(argv[i + 1]);
+			i++;
+		} else if (arg == "-w") {
+			n_threads = stoi(argv[i + 1]);
+			i++;
+		}
+	}
+
+	HttpServer server(port, n_threads);
 
 	signal(SIGINT, signal_handler);
 

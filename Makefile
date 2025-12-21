@@ -1,5 +1,5 @@
 CXX      := g++
-CXXFLAGS := -std=c++20 -Wall -Wextra -Werror -Isrc -MMD -MP -O3
+CXXFLAGS := -std=c++20 -Wall -Wextra -Werror -Isrc -MMD -MP 
 LDFLAGS  := 
 
 SRC_DIR   := src
@@ -16,11 +16,15 @@ DEPS := $(OBJS:.o=.d)
 all: $(TARGET)
 
 release: CXXFLAGS += -O3 -DNDEBUG
-release: all
+release: clean all
+
+docker: CXXFLAGS += -O3 -DNDEBUG
+docker: LDFLAGS += -static
+docker: clean all
 
 debug: CXXFLAGS += -g -O0 -fsanitize=address,undefined
 debug: LDFLAGS  += -fsanitize=address,undefined
-debug: all
+debug: clean all
 
 $(TARGET): $(OBJS)
 	@echo "[LINK] $@"

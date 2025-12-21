@@ -28,7 +28,7 @@ A high-performance, non-blocking HTTP server built from scratch in C++17. It imp
 Standard GNU Make build system.
 
 ```
-make
+make release
 ```
 
 ## Usage
@@ -36,13 +36,13 @@ make
 1.  **Run the server:**
 
     ```
-    ./server
+    ./server [-p <PORT>] [-w <N_WORKERS>]
     ```
 
-    Listens on port `8080` by default.
+    Listens on port `80` by default.
 
 2.  **Web Interface:**
-    Access `http://localhost:8080` to use the frontend.
+    Access `http://localhost:80` to use the frontend.
 
 3.  **API / Endpoints:**
 
@@ -62,9 +62,19 @@ Pastes are stored as file pairs in the `p/` directory (or sharded subdirectories
 
 When a paste is requested via `GET /p/{ID}`, the server reads the `.meta` file. If `current_time > expiration`, both files are physically deleted via `std::filesystem::remove`, and a 404 is returned.
 
-## TODO
+## Docker Image
 
-- Docker image (and arguments)
+A docker image can be built with:
+
+```
+docker -t cppaste build
+```
+
+To run in port 8080 and save the pastes in the folder `./p`:
+
+```
+docker run -p"8080:80" -v"$PWD/p:/p" cppaste:latest
+```
 
 ## License
 

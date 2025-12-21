@@ -52,7 +52,13 @@ HttpResponse handle_paste(const HttpRequest &req)
 	}
 
 	std::string id = generate_id();
-	save_paste_to_disk(id, it_content->second, it_expiration->second);
+	try {
+		save_paste_to_disk(id, it_content->second, it_expiration->second);
+	} catch (std::exception &ex) {
+		response.setStatusCode(500);
+		response.setBody("<h1>Internal Server Error</h1>");
+		return response;
+	}
 
 	std::string url = "/p/" + id;
 
