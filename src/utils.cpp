@@ -1,4 +1,5 @@
 #include "utils.hpp"
+#include <cstddef>
 #include <ctime>
 #include <filesystem>
 #include <fstream>
@@ -72,12 +73,24 @@ void save_paste_to_disk(const std::string &id, const std::string &content,
 	metadata.close();
 }
 
-std::string html_escape(const std::string &data)
+std::string html_escape(const std::string_view &data)
 {
 	std::string buffer;
-	buffer.reserve(data.size());
-	for (size_t pos = 0; pos != data.size(); ++pos) {
-		switch (data[pos]) {
+
+	// Spare space to minimize reallocations
+	buffer.reserve(data.size() + (data.size() >> 3));
+
+	size_t pos = 0;
+	while (pos < data.size()) {
+		size_t next = data.find_first_of("&\"'/<>", pos);
+		if (next == std::string_view::npos) {
+			buffer.append(data.substr(pos));
+			break;
+		}
+
+		buffer.append(data.substr(pos, next - pos));
+
+		switch (data[next]) {
 		case '&':
 			buffer.append("&amp;");
 			break;
@@ -93,11 +106,11 @@ std::string html_escape(const std::string &data)
 		case '>':
 			buffer.append("&gt;");
 			break;
-		default:
-			buffer.append(&data[pos], 1);
-			break;
 		}
+
+		pos = next + 1;
 	}
+
 	return buffer;
 }
 

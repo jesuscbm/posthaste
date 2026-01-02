@@ -170,7 +170,6 @@ HttpResponse show_paste(const HttpRequest &req)
     )";
 
 	response.setBody(std::move(page));
-	response.setContentType("text/html");
-
+	response.setContentType("text/html; charset=utf-8");
 	return response;
 }
