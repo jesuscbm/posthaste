@@ -80,6 +80,16 @@ HttpResponse show_paste(const HttpRequest &req)
 	}
 
 	std::string paste_id = path.substr(3);
+
+	// We don't want /p/../../../danger
+	if (paste_id.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+		!= std::string::npos) {
+		HttpResponse response;
+		response.setStatusCode(400);
+		response.setBody("<h1>Invalid Paste ID</h1>");
+		return response;
+	}
+
 	std::string dirpath = "p/" + paste_id.substr(0, 1) + "/" + paste_id.substr(1, 1) + "/";
 	std::string filepath = dirpath + paste_id.substr(2);
 	std::string metapath = dirpath + paste_id.substr(2) + ".meta";

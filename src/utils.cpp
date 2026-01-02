@@ -49,6 +49,15 @@ void save_paste_to_disk(const std::string &id, const std::string &content,
 {
 	if (id.length() < 4)
 		return;
+
+	if (id.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+		!= std::string::npos) {
+		return;
+	}
+
+	if (!std::filesystem::is_directory("p/"))
+		std::filesystem::create_directory("p/");
+
 	std::string shard1 = "p/" + id.substr(0, 1) + "/";
 	std::string shard2 = shard1 + id.substr(1, 1) + "/";
 	std::filesystem::create_directory(shard1);
@@ -82,7 +91,7 @@ std::string html_escape(const std::string_view &data)
 
 	size_t pos = 0;
 	while (pos < data.size()) {
-		size_t next = data.find_first_of("&\"'/<>", pos);
+		size_t next = data.find_first_of("&\"'<>", pos);
 		if (next == std::string_view::npos) {
 			buffer.append(data.substr(pos));
 			break;

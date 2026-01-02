@@ -35,11 +35,17 @@ make release
 
 1.  **Run the server:**
 
-    ```
+    ```bash
     ./server [-p <PORT>] [-w <N_WORKERS>]
     ```
 
     Listens on port `80` by default.
+
+    A docker image is available in the ghcr:
+
+    ```bash
+    docker run -p"80:80" -v"$PWD/p:/p" -d ghcr.io/jesuscbm/cppaste/cppaste:latest
+    ```
 
 2.  **Web Interface:**
     Access `http://localhost:80` to use the frontend.
