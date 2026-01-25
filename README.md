@@ -1,9 +1,8 @@
-# CPPaste / Custom C++ HTTP Server
+# POSTHaste / Custom C++ HTTP Server
 
-A high-performance, non-blocking HTTP server built from scratch in C++17. It implements the Reactor pattern using `epoll` (Edge Triggered) and a custom ThreadPool. Deployed as a lightweight Pastebin service.
+POSTHaste is a lightweight Pastebin service.
 
-**Environment:** POSIX Sockets.
-**Dependencies:** None (Pure C++ STL).
+The real deal is a high-performance, non-blocking HTTP server API built from scratch in C++17. It implements the Reactor pattern using `epoll` (Edge Triggered) and a custom ThreadPool.
 
 ## Architecture & Features
 
@@ -44,7 +43,7 @@ make release
     A docker image is available in the ghcr:
 
     ```bash
-    docker run -p"80:80" -v"$PWD/p:/p" -d ghcr.io/jesuscbm/cppaste/cppaste:latest
+    docker run -p"80:80" -v"$PWD/p:/p" -d ghcr.io/jesuscbm/posthaste:latest
     ```
 
 2.  **Web Interface:**
@@ -61,25 +60,25 @@ make release
 
 ## Storage Logic
 
-Pastes are stored as file pairs in the `p/` directory (or sharded subdirectories if configured):
+Pastes are stored as file pairs in sharded subdirectories inside the `p/` directory:
 
 - `{ID}`: Raw content.
 - `{ID}.meta`: Expiration timestamp (Unix epoch).
 
-When a paste is requested via `GET /p/{ID}`, the server reads the `.meta` file. If `current_time > expiration`, both files are physically deleted via `std::filesystem::remove`, and a 404 is returned.
+When a paste is requested via `GET /p/{ID}`, the server reads the `.meta` file. If `current_time > expiration`, both files are physically deleted and a 404 is returned.
 
 ## Docker Image
 
 A docker image can be built with:
 
 ```
-docker -t cppaste build
+docker -t posthaste build
 ```
 
 To run in port 8080 and save the pastes in the folder `./p`:
 
 ```
-docker run -p"8080:80" -v"$PWD/p:/p" cppaste:latest
+docker run -p"8080:80" -v"$PWD/p:/p" posthaste:latest
 ```
 
 ## License

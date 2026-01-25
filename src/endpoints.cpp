@@ -156,7 +156,6 @@ HttpResponse show_paste(const HttpRequest &req)
                 white-space: pre-wrap; 
                 overflow-x: auto;
             }
-            /* Contenedor flexible para alinear link y fecha */
             .header {
                 display: flex;
                 justify-content: space-between;
