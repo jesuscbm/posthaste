@@ -1,17 +1,53 @@
 #include "endpoints.hpp"
+#include <cstddef>
 #include <ctime>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
-#include <ostream>
-#include <sstream>
+#include <optional>
 #include <string>
 
+#include "http/httpresponse.hpp"
 #include "utils.hpp"
+
+// Curlable menu
+#define R  "\033[0m"
+#define B  "\033[1m"
+#define P  "\033[38;5;141m"
+#define BL "\033[38;5;111m"
+#define G  "\033[38;5;120m"
+#define GR "\033[38;5;240m"
+#define RED "\033[38;5;203m"
+#define HOST "paste.jesusblazquez.eu"
+
+static constexpr std::string_view HELP_MENU = 
+    "\n" P "   ~/posthaste " R ":: " BL "https://" HOST R "\n\n"
+
+    B "   USAGE" R "\n"
+      "     Send a POST request with " B "x-www-form-urlencoded" R " body.\n"
+      "     Params " BL "content" R " & " BL "expiration" R " are required.\n\n"
+
+    B "   UPLOAD METHODS" R "\n"
+    GR "     # 1. Upload short text" R "\n"
+       "     " G "$ curl -d \"content=Hello World\" -d \"expiration=1h\" " HOST "/paste" R "\n\n"
+
+    GR "     # 2. Upload a file (Use --data-urlencode to safe escape)" R "\n"
+       "     " G "$ curl --data-urlencode \"content@main.cpp\" -d \"expiration=1h\" " HOST "/paste" R "\n\n"
+
+    GR "     # 3. Pipe from stdin (Shell substitution required)" R "\n"
+       "     " G "$ curl --data-urlencode \"content=$(cat)\" -d \"expiration=1h\" " HOST "/paste" R "\n\n"
+
+    B "   OPTIONS" R "\n"
+       "     " BL "-d \"expiration=...\"" R "    -1, 1h, 1d, 1w\n\n"
+
+    B "   EXAMPLES" R "\n"
+    GR "     # Paste file with 1 hour expiration" R "\n"
+       "     " G "$ curl --data-urlencode \"content@log.txt\" -d \"expiration=1h\" " HOST "/paste" R "\n\n";
+
 
 HttpResponse serve_file(const HttpRequest &, std::string filename)
 {
-	std::ifstream f(filename);
+	std::ifstream f(filename, std::ios::ate);
 
 	if (!f.is_open()) {
 		HttpResponse response;
@@ -22,12 +58,29 @@ HttpResponse serve_file(const HttpRequest &, std::string filename)
 
 	HttpResponse response;
 
-	std::string s((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
+	std::size_t size = f.tellg();
+	f.seekg(0);
+	std::string s(size, '\0');
+	f.read(&s[0], size);
 
 	response.setStatusCode(200);
 	response.setContentType("text/html");
 	response.setBody(std::move(s));
 
+	return response;
+}
+
+HttpResponse root_endpoint(const HttpRequest &req) {
+	std::optional<std::string> user_agent = req.getHeader("User-Agent");
+	if (!user_agent || user_agent->rfind("curl", 0) != 0){
+		return serve_file(req, "index.html");
+	}
+
+	HttpResponse response;
+
+	response.setBody(std::string(HELP_MENU));
+
+	response.setContentType("text/plain");
 	return response;
 }
 
@@ -62,6 +115,12 @@ HttpResponse handle_paste(const HttpRequest &req)
 
 	std::string url = "/p/" + id;
 
+	std::optional<std::string> user_agent = req.getHeader("User-Agent");
+	if (user_agent && user_agent->rfind("curl", 0) == 0){
+		response.setBody(url + "\n");
+		return response;
+	}
+
 	response.setStatusCode(303);
 	response.addHeader("Location", url);
 
@@ -94,7 +153,7 @@ HttpResponse show_paste(const HttpRequest &req)
 	std::string filepath = dirpath + paste_id.substr(2);
 	std::string metapath = dirpath + paste_id.substr(2) + ".meta";
 
-	std::fstream f(filepath);
+	std::ifstream f(filepath, std::ios::ate);
 	if (!f.is_open()) {
 		response.setStatusCode(404);
 		response.setBody("<h1>Not found</h1>");
@@ -125,8 +184,10 @@ HttpResponse show_paste(const HttpRequest &req)
 		return response;
 	}
 
-	std::stringstream ss;
-	ss << f.rdbuf();
+	std::size_t size = f.tellg();
+	f.seekg(0);
+	std::string paste(size, '\0');
+	f.read(&paste[0], size);
 
 	std::string format_date;
 	if (expiration == -1) {
@@ -140,12 +201,23 @@ HttpResponse show_paste(const HttpRequest &req)
 		format_date = cpp_yousuck_sometimes.str();
 	}
 
-	std::string page = R"(
+	std::string page;
+	page.reserve(4096 + size);
+
+	std::optional<std::string> user_agent = req.getHeader("User-Agent");
+	if (user_agent && user_agent->rfind("curl", 0) == 0){
+		response.setBody(std::move(paste));
+		response.setContentType("text/plain");
+		return response;
+	}
+
+	page += R"(
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Paste )" + paste_id
-					   + R"(</title>
+        <title>Paste )" ;
+	page += paste_id;
+	page += R"(</title>
         <style>
             body { background: #1a1b26; color: #a9b1d6; font-family: monospace; padding: 20px; }
             .code-block { 
@@ -169,11 +241,12 @@ HttpResponse show_paste(const HttpRequest &req)
     <body>
         <div class="header">
             <a href="/">&larr; Create New Paste</a>
-            <span class="meta">Expires: )"
-					   + format_date + R"(</span>
+            <span class="meta">Expires: )";
+	page += format_date;
+	page += R"(</span>
         </div>
         <div class="code-block">)"
-					   + html_escape(ss.str()) + R"(</div>
+					   + html_escape(paste) + R"(</div>
     </body>
     </html>
     )";

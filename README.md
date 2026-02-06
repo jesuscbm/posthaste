@@ -1,6 +1,6 @@
 # POSTHaste / Custom C++ HTTP Server
 
-POSTHaste is a lightweight Pastebin service.
+POSTHaste is a lightweight curl-friendly Pastebin service.
 
 The real deal is a high-performance, non-blocking HTTP server API built from scratch in C++17. It implements the Reactor pattern using `epoll` (Edge Triggered) and a custom ThreadPool.
 

@@ -1,12 +1,10 @@
 #ifndef ENDPOINTS_HPP
 #define ENDPOINTS_HPP
 
-#include <string>
-
 #include "http/httprequest.hpp"
 #include "http/httpresponse.hpp"
 
-HttpResponse serve_file(const HttpRequest &, std::string filename);
+HttpResponse root_endpoint(const HttpRequest &req);
 HttpResponse handle_paste(const HttpRequest &req);
 HttpResponse show_paste(const HttpRequest &req);
 

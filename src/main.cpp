@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 	signal(SIGINT, signal_handler);
 
 	server.addEndpoint("/health", status);
-	server.addEndpoint("/", [](const HttpRequest &r) { return serve_file(r, "index.html"); });
+	server.addEndpoint("/", root_endpoint);
 	server.addEndpoint("/paste", handle_paste);
 	server.addEndpoint("/p/*", show_paste);
 
