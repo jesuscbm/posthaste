@@ -19,7 +19,7 @@
 
 class HttpServer {
    private:
-	enum State { METHOD, PATH, VERSION, HEADERS_KEY, HEADERS_VALUE, BODY, DONE };
+	enum State { METHOD, PATH, VERSION, HEADERS_KEY, HEADERS_VALUE, BODY };
 
 	struct ConnectionContext {	// Manages parsing in active connections
 		int fd;

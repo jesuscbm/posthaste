@@ -10,7 +10,7 @@
 std::optional<HttpRequest> HttpServer::get_request(ConnectionContext &ctx, bool &is_closed)
 {
 	const int fd = ctx.fd;
-	HttpRequest req = ctx.req;
+	HttpRequest &req = ctx.req;
 	std::string &body = ctx.body;
 
 	for (;;) {
@@ -20,12 +20,6 @@ std::optional<HttpRequest> HttpServer::get_request(ConnectionContext &ctx, bool 
 			// If we get 0 or the error doesn't say to try again we retry
 			if (bytes_received == 0 || (errno != EINTR && errno != EAGAIN && errno != EWOULDBLOCK))
 				is_closed = true;
-			if (ctx.state >= BODY) {
-				req.setBody(std::move(ctx.body));
-				HttpRequest final_req = std::move(ctx.req);
-				ctx.reset();
-				return req;
-			}
 			return std::nullopt;
 		}
 
@@ -73,7 +67,7 @@ std::optional<HttpRequest> HttpServer::get_request(ConnectionContext &ctx, bool 
 						} else {
 							HttpRequest final_req = std::move(ctx.req);
 							ctx.reset();
-							return req;
+							return final_req;
 						}
 					}
 					ctx.current_header_key.clear();
@@ -109,16 +103,13 @@ std::optional<HttpRequest> HttpServer::get_request(ConnectionContext &ctx, bool 
 			case BODY:
 				body.push_back(c);
 				if (body.size() >= ctx.content_length) {
-					ctx.state = DONE;
+					// TODO: Save extra bytes for next request (Weird but possible)
+					req.setBody(std::move(body));
+					HttpRequest final_req = std::move(ctx.req);
+					ctx.reset();
+					return final_req;
 				}
 				break;
-
-			case DONE:
-				// TODO: Save extra bytes for next request (Weird but possible)
-				req.setBody(std::move(body));
-				HttpRequest final_req = std::move(ctx.req);
-				ctx.reset();
-				return req;
 			}
 		}
 	}

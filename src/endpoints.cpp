@@ -123,6 +123,7 @@ HttpResponse handle_paste(const HttpRequest &req)
 
 	response.setStatusCode(303);
 	response.addHeader("Location", url);
+	response.setBody("");
 
 	return response;
 }

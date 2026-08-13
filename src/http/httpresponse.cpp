@@ -30,7 +30,7 @@ std::string HttpResponse::serialize() const
 	for (const auto &p : this->headers)
 		ss.append(p.first).append(": ").append(p.second).append("\r\n");
 
-	ss.append("\r\n").append(this->body).append("\r\r\n\n");
+	ss.append("\r\n").append(this->body);
 
 	return ss;
 }

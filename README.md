@@ -4,6 +4,8 @@ POSTHaste is a lightweight curl-friendly Pastebin service.
 
 The real deal is a high-performance, non-blocking HTTP server API built from scratch in C++17. It implements the Reactor pattern using `epoll` (Edge Triggered) and a custom ThreadPool.
 
+A live demo can be found [here](https://paste.jesusblazquez.eu).
+
 ## Architecture & Features
 
 - **Core:** Non-blocking I/O with `epoll` in Edge-Triggered mode.
