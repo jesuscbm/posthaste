@@ -149,8 +149,10 @@ void HttpServer::handle_connection(int fd)
 			ctx_ptr = contexts.at(fd);
 		}
 	}
-	if (!ctx_ptr)
+	if (!ctx_ptr) {
+		close(fd);
 		return;
+	}
 	ConnectionContext &c = *ctx_ptr;
 
 	for (;;) {
@@ -158,11 +160,11 @@ void HttpServer::handle_connection(int fd)
 		std::optional<HttpRequest> request = get_request(c, is_closed);
 
 		if (is_closed) {
-			close(fd);
 			{
 				std::lock_guard lock(contexts_mutex);
 				contexts.erase(fd);
 			}
+			close(fd);
 			return;
 		}
 
@@ -199,7 +201,14 @@ void HttpServer::handle_connection(int fd)
 	struct epoll_event ev;
 	ev.events = EPOLLIN | EPOLLET | EPOLLONESHOT;
 	ev.data.fd = fd;
-	epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &ev);
+	if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &ev) < 0) {
+		// We would never hear about this socket again, so drop it
+		{
+			std::lock_guard lock(contexts_mutex);
+			contexts.erase(fd);
+		}
+		close(fd);
+	}
 }
 
 HttpServer::~HttpServer()

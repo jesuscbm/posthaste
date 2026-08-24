@@ -2,23 +2,16 @@
 #define THREADPOOL_HPP
 
 #include <functional>
-#include <mutex>
 #include <optional>
-#include <queue>
 #include <thread>
 #include <vector>
 
-#include <condition_variable>
+#include "lockfreequeue.hpp"
 
 class ThreadPool {
    private:
-	std::queue<std::function<void()>> tasks;
 	std::vector<std::thread> threads;
-
-	std::mutex queue_mutex;
-	std::condition_variable cv;
-
-	bool stop = false;
+	LockFreeQueue<std::function<void()>> queue;
 
    public:
 	ThreadPool(std::optional<size_t> n_threads = std::nullopt);
